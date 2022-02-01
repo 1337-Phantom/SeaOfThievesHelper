@@ -31,6 +31,10 @@ public class AntiAFK {
         actionThread = new AntiAFKThread();
     }
 
+    public boolean isActive() {
+        return actionThread == null || actionThread.isAlive();
+    }
+
     public int randomInRange(int min, int max) {
         if (min > max) {
             System.err.println("The minimal value cannot be higher than the max value");
@@ -46,12 +50,16 @@ public class AntiAFK {
         robot.keyRelease(KeyEvent.VK_A);
         robot.keyRelease(KeyEvent.VK_S);
         robot.keyRelease(KeyEvent.VK_D);
-        robot.mouseRelease(InputEvent.BUTTON1_MASK);
+        robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
     }
 
     private class AntiAFKThread implements Runnable {
         private boolean exit;
         private final Thread thread;
+
+        public boolean isAlive() {
+            return !exit;
+        }
 
         public AntiAFKThread() {
             thread = new Thread(this, "AntiAFKActionThread");
@@ -98,7 +106,6 @@ public class AntiAFK {
                         keyTimer.reset();
                     }
                 } else if (useStaringWheel) {
-                    System.out.println(keyCycle);
                     if (keyTimer.hasReached(randomInRange(900, 1100))) {
                         switch (keyCycle) {
                             case 0:
@@ -126,8 +133,8 @@ public class AntiAFK {
                 }
                 if (hitWithMouse) {
                     if (clickTimer.hasReached(randomInRange(500, 3000))) {
-                        robot.mousePress(InputEvent.BUTTON1_MASK);
-                        robot.mouseRelease(InputEvent.BUTTON1_MASK);
+                        robot.mousePress(InputEvent.BUTTON1_DOWN_MASK);
+                        robot.mouseRelease(InputEvent.BUTTON1_DOWN_MASK);
                         clickTimer.reset();
                     }
                 }

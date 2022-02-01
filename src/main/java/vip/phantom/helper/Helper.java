@@ -3,8 +3,8 @@ package vip.phantom.helper;
 import lombok.Getter;
 import lombok.Setter;
 import org.jnativehook.keyboard.NativeKeyEvent;
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
+import vip.phantom.api.ConnectionUtil;
 import vip.phantom.api.TimeUtil;
 import vip.phantom.api.font.Fonts;
 import vip.phantom.helper.food.Food;
@@ -15,6 +15,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -30,6 +31,7 @@ public class Helper {
     private TrayIcon hotbarIcon;
 
     private TimeUtil timeUtil = new TimeUtil();
+    private float timeOfKeyUp = 0;
 
     private final List<Food> foodList = new ArrayList<>();
     private final List<FoodButton> foodButtonList = new ArrayList<>();
@@ -51,7 +53,7 @@ public class Helper {
             foodList.add(new Food("Pork", 50, 60, 120, "https://static.wikia.nocookie.net/seaofthieves_gamepedia/images/2/22/Pork.png/revision/latest/scale-to-width-down/250?cb=20200518230717"));
             foodList.add(new Food("Chicken", 50, 60, 120, "https://static.wikia.nocookie.net/seaofthieves_gamepedia/images/c/cc/Chicken_%28meat%29.png/revision/latest/scale-to-width-down/250?cb=20200602055543"));
 //            foodList.add(new Food("Fish", 30, 45, 60, new File("src/main/resources/Fishi Mc Fish.png")));
-            foodList.add(new Food("Fish", 5, 10, 20, new File("src/main/resources/Fishi Mc Fish.png")));
+            foodList.add(new Food("Fish", 5, 10, 20, "https://phantom.vip/images/SOT/FishiMcFish.png"));
             foodList.add(new Food("Snake", 50, 60, 120, "https://static.wikia.nocookie.net/seaofthieves_gamepedia/images/7/78/Snake_%28meat%29.png/revision/latest/scale-to-width-down/250?cb=20200602053030"));
         } catch (IOException e) {
             e.printStackTrace();
@@ -112,14 +114,11 @@ public class Helper {
         for (FoodButton foodButton : foodButtonList) {
             foodButton.keyTyped(character, key);
         }
-        if (Keyboard.isKeyDown(Keyboard.KEY_LCONTROL) && Keyboard.isKeyDown(Keyboard.KEY_LSHIFT) && key == Keyboard.KEY_LMENU) {
-            enableOrDisableAntiAFK();
-        }
     }
 
     public void start() {
         try {
-            hotbarIcon = new TrayIcon(ImageIO.read(new File("src/main/resources/logo.png")), "Tray Demo");
+            hotbarIcon = new TrayIcon(ConnectionUtil.getBufferedImageWithUserAgent(new URL("https://phantom.vip/images/SOT/logo.png")), "Tray Demo");
 
             hotbarIcon.setImageAutoSize(true);
 
@@ -141,11 +140,14 @@ public class Helper {
     public void enableOrDisableAntiAFK() {
         doAntiAFK = !doAntiAFK;
         if (doAntiAFK) {
+            System.out.println("[AntiAFK] Activated AntiAFK");
             antiAFK.startAntiAFK(false, true, true, true);
-            Helper.getInstance().sendWindowsNotification("AntiAFK", "activating in " + antiAFK.getStartDelay() / 1000 + " seconds");
+
+//            Helper.getInstance().sendWindowsNotification("AntiAFK", "activating in " + antiAFK.getStartDelay() / 1000 + " seconds");
         } else {
+            System.out.println("[AntiAFK] Deactivated AntiAFK");
             antiAFK.stopAntiAFK();
-            Helper.getInstance().sendWindowsNotification("AntiAFK", "was disabled");
+//            Helper.getInstance().sendWindowsNotification("AntiAFK", "was disabled");
         }
     }
 
@@ -157,12 +159,11 @@ public class Helper {
         if (e.getKeyChar() == "-".charAt(0)) {
             if (!minusDown) {
                 minusDown = true;
-                System.out.println("Resetting time");
+                timeOfKeyUp = System.currentTimeMillis();
                 timeUtil.reset();
             }
-            System.out.println(timeUtil.getCurrentTime());
+            System.out.println("[AntiAFK] " + (antiAFK.isActive() ? "Deactivating" : "Activating") + " in " + (timeUtil.getCurrentTime() + 2000 - System.currentTimeMillis()));
             if (timeUtil.hasReached(2000)) {
-                System.out.println("enabling");
                 enableOrDisableAntiAFK();
                 timeUtil.reset();
             }
@@ -174,7 +175,6 @@ public class Helper {
     }
 
     public void globalKeyReleased(NativeKeyEvent e) {
-        System.out.println("releasing");
         if (e.getKeyCode() == NativeKeyEvent.VC_MINUS) {
 //            if (timeUtil.hasReached(2000)) {
 //

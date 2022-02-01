@@ -1,6 +1,7 @@
 package vip.phantom.helper.food;
 
 import lombok.Getter;
+import vip.phantom.api.ConnectionUtil;
 import vip.phantom.api.RenderUtil;
 
 import javax.imageio.ImageIO;
@@ -21,7 +22,7 @@ public class Food {
     public Food(String name, long undercooked, long cooked, long burnt, String pictureURL) throws IOException {
         this.name = name;
         this.pictureURL = new URL(pictureURL);
-        final BufferedImage bufferedImage = ImageIO.read(this.pictureURL);
+        final BufferedImage bufferedImage = ConnectionUtil.getBufferedImageWithUserAgent(this.pictureURL);
         pictureSize = new int[]{bufferedImage.getWidth(), bufferedImage.getHeight()};
         textureID = RenderUtil.createTexture(bufferedImage);
         this.undercooked = undercooked * 1000;

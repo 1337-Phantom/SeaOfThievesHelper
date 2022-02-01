@@ -10,6 +10,7 @@ import vip.phantom.api.font.Fonts;
 import vip.phantom.helper.Helper;
 
 import java.awt.*;
+import java.io.BufferedInputStream;
 
 public class FoodLabel {
     @Getter
@@ -22,6 +23,8 @@ public class FoodLabel {
     private final SoundPlayer player = new SoundPlayer();
     private final FontRenderer fr = Fonts.getInstance().getFonts().get("BrushTip20.0");
     private final FontRenderer fr1 = Fonts.getInstance().getFonts().get("Verdana17.0");
+
+    private boolean playsDoneSound = false;
 
     private final long addTime = System.currentTimeMillis();
 
@@ -42,9 +45,18 @@ public class FoodLabel {
         fr1.drawString(leftTimeTillCooked, x + 5 + fr.getWidth(food.getName()) + 3, y + height / 2f + fr.getHeight(food.getName()) / 2f - fr1.getHeight(leftTimeTillCooked), timer.hasReached(food.getBurnt()) ? Color.white : Color.black);
         RenderUtil.endScissor();
         width = 5 + fr.getWidth(food.getName()) + 3 + fr1.getWidth(leftTimeTillCooked) + 5;
-        if (timer.hasReached(food.getCooked()) && !player.isPlaying()) {
-            System.out.println("starting to play");
-            player.start("src/main/sounds/ticktock.wav");
+        if (timer.hasReached(food.getBurnt()) && (!player.isPlaying() || playsDoneSound)) {
+//            if (playsDoneSound) {
+//                player.stop();
+//            }
+            playsDoneSound = false;
+//            player.start("src/main/sounds/OhneinunserSchiffbrennt.wav");
+            player.start(new BufferedInputStream(getClass().getResourceAsStream("/sounds/OhneinunserSchiffbrennt.wav")));
+        } else if (timer.hasReached(food.getCooked()) && !player.isPlaying()) {
+//            player.start("src/main/sounds/ticktock.wav");
+            player.start(new BufferedInputStream(getClass().getResourceAsStream("/sounds/ticktock.wav")));
+
+            playsDoneSound = true;
         }
     }
 
@@ -54,7 +66,7 @@ public class FoodLabel {
                 Helper.getInstance().removeFoodFromCookList(this);
                 player.stop();
             } else {
-                player.start("src/main/sounds/ticktock.wav");
+//                player.start("src/main/sounds/ticktock.wav");
             }
         }
     }

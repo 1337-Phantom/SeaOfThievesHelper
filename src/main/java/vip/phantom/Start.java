@@ -7,9 +7,16 @@ import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 import org.lwjgl.opengl.Display;
 import org.lwjgl.opengl.DisplayMode;
+import vip.phantom.api.ConnectionUtil;
 import vip.phantom.api.GlobalKeyListener;
 import vip.phantom.helper.Helper;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.nio.ByteBuffer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -23,7 +30,12 @@ public class Start {
 
     private static Helper helper;
 
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
+        if (args.length != 1) {
+//            System.setProperty("java.library.path", "./libraries/");
+//            System.loadLibrary("libraries/lwjgl64.dll");
+//            System.loadLibrary("libraries/OpenAL64.dll");
+        }
         try {
             GlobalScreen.registerNativeHook();
         } catch (NativeHookException ex) {
@@ -38,11 +50,11 @@ public class Start {
         new Start().run(args);
     }
 
-    public void run(String[] args) {
-        System.out.println(System.getProperty("java.library.path"));
+    public void run(String[] args) throws IOException {
         try {
             Display.setDisplayMode(new DisplayMode(720, 400));
-            Display.setTitle("Sea of Thieves Helper by Phantom");
+            Display.setTitle("Sea of Thieves Helper - Phantom");
+            Display.setIcon(new ByteBuffer[]{readImageToBuffer(ConnectionUtil.getBufferedImageWithUserAgent(new URL("https://phantom.vip/images/SOT/logo_16x16.png"))), readImageToBuffer(ConnectionUtil.getBufferedImageWithUserAgent(new URL("https://phantom.vip/images/SOT/logo_32x32.png")))});
             Display.setResizable(true);
             Display.setInitialBackground(0, 0, 0);
             Display.create();
@@ -93,6 +105,18 @@ public class Start {
         } catch (NativeHookException nativeHookException) {
             nativeHookException.printStackTrace();
         }
+    }
+
+    private ByteBuffer readImageToBuffer(BufferedImage bufferedImage) throws IOException {
+        int[] aint = bufferedImage.getRGB(0, 0, bufferedImage.getWidth(), bufferedImage.getHeight(), (int[]) null, 0, bufferedImage.getWidth());
+        ByteBuffer bytebuffer = ByteBuffer.allocate(4 * aint.length);
+
+        for (int i : aint) {
+            bytebuffer.putInt(i << 8 | i >> 24 & 255);
+        }
+
+        bytebuffer.flip();
+        return bytebuffer;
     }
 
     private void drawScreen(int mouseX, int mouseY) {

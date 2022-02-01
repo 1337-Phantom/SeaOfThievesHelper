@@ -3,6 +3,7 @@ package vip.phantom.api;
 import javax.sound.sampled.*;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class SoundPlayer implements LineListener {
 
@@ -48,6 +49,44 @@ public class SoundPlayer implements LineListener {
             currentAudioClip.start();
             setVolume(currentVolume);
             lastPathPlayed = audioFilePath;
+//            while (!playCompleted) {
+//                // wait for the playback completes
+//                try {
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException ex) {
+//                    ex.printStackTrace();
+//                }
+//            }
+//            audioClip.close();
+            return true;
+        } catch (UnsupportedAudioFileException ex) {
+            System.out.println("The specified audio file is not supported.");
+            ex.printStackTrace();
+        } catch (LineUnavailableException ex) {
+            System.out.println("Audio line for playing back is unavailable.");
+            ex.printStackTrace();
+        } catch (IOException ex) {
+            System.out.println("Error playing the audio file.");
+            ex.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean start(InputStream inputStream) {
+        try {
+            final AudioInputStream audioStream = AudioSystem.getAudioInputStream(inputStream);
+
+            final AudioFormat format = audioStream.getFormat();
+
+            final DataLine.Info info = new DataLine.Info(Clip.class, format);
+
+            currentAudioClip = (Clip) AudioSystem.getLine(info);
+
+            currentAudioClip.addLineListener(this);
+            currentAudioClip.open(audioStream);
+
+            currentAudioClip.start();
+            setVolume(currentVolume);
 //            while (!playCompleted) {
 //                // wait for the playback completes
 //                try {

@@ -6,6 +6,7 @@ import java.awt.*;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Objects;
 
 public class Fonts {
     private static Fonts instance;
@@ -20,8 +21,7 @@ public class Fonts {
 
     private void initFont(String name, float size) {
         try {
-//            fonts.put(name + size, new FontRenderer(Font.createFont(Font.TRUETYPE_FONT, getClass().getResourceAsStream( name + ".ttf")).deriveFont(size)));
-            fonts.put(name + size, new FontRenderer(Font.createFont(Font.TRUETYPE_FONT, new FileInputStream("src/main/java/vip/phantom/api/font/fonts/" + name + ".ttf")).deriveFont(size)));
+            fonts.put(name + size, new FontRenderer(Font.createFont(Font.TRUETYPE_FONT, Objects.requireNonNull(getClass().getResourceAsStream("/fonts/" + name + ".ttf"))).deriveFont(size)));
         } catch (FontFormatException | IOException e) {
             e.printStackTrace();
         }
